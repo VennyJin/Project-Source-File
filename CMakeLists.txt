@@ -19,14 +19,6 @@ set(SOURCE
 message(------project name : ${PROJ_NAME} ---------)
 
 ##########################################################
-find_package( OpenCV REQUIRED )
-INCLUDE_DIRECTORIES(
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_LIST_DIR}/include
-  ${OpenCV_INCLUDE_DIRS}
-)
-##########################################################
 
 # IF(WIN32)
 #   SET(AJILEDRIVER_HOME "C:/Program Files (x86)/Ajile/AjileDriver/" CACHE STRING "Location of Ajile Driver include and lib")
@@ -72,6 +64,15 @@ if(UNIX)
 endif(UNIX)
 
 # ##############################################################################
+find_package( OpenCV REQUIRED )
+INCLUDE_DIRECTORIES(
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_LIST_DIR}/include
+  ${OpenCV_INCLUDE_DIRS}
+  #${Spinnaker_INCLUDE_DIR} 
+)
+##########################################################
 # Project
 add_executable(${PROJ_NAME} ${SOURCE})
 target_link_libraries(${PROJ_NAME} ${OpenCV_LIBS} ${Spinnaker_LIBS} -lajiledriver)

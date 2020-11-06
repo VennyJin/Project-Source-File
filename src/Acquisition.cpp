@@ -35,8 +35,8 @@
  *  programming with callbacks and events, and SaveToAvi exhibits video creation.
  */
 
-#include "Spinnaker.h"
-#include "SpinGenApi/SpinnakerGenApi.h"
+#include "spinnaker/Spinnaker.h"
+#include <spinnaker/SpinGenApi/SpinnakerGenApi.h>
 #include <iostream>
 #include <sstream>
 
