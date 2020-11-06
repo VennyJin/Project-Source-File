@@ -9,6 +9,7 @@
 #include <opencv2/opencv.hpp>
 
 #include "example_helper.h"
+#include "camera_initiation.h"
 
 // helper function which create a set of horizontal and vertical sinusoid images with difference phases
 std::vector<cv::Mat> GenerateSinusoidImages(int width, int height) {
@@ -113,7 +114,6 @@ aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepe
 
 
 int main(int argc, char **argv) {
-
+    InitializateCamera();
     return RunExample(&CreateProject, argc, argv);
-
 }

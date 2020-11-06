@@ -1,0 +1,17 @@
+[
+{
+  "directory": "/home/venny/Desktop/Project Source File/build",
+  "command": "/usr/bin/x86_64-linux-gnu-g++-5   -DLINUX -I\"/home/venny/Desktop/Project Source File/build\" -I\"/home/venny/Desktop/Project Source File\" -I\"/home/venny/Desktop/Project Source File/include\" -isystem /usr/local/include/opencv4 -I/usr/include/spinnaker -I\"/home/venny/Desktop/Project Source File/.\"  -O3 -DNDEBUG   -std=gnu++14 -o CMakeFiles/MI3.dir/src/main.cpp.o -c \"/home/venny/Desktop/Project Source File/src/main.cpp\"",
+  "file": "/home/venny/Desktop/Project Source File/src/main.cpp"
+},
+{
+  "directory": "/home/venny/Desktop/Project Source File/build",
+  "command": "/usr/bin/x86_64-linux-gnu-g++-5   -DLINUX -I\"/home/venny/Desktop/Project Source File/build\" -I\"/home/venny/Desktop/Project Source File\" -I\"/home/venny/Desktop/Project Source File/include\" -isystem /usr/local/include/opencv4 -I/usr/include/spinnaker -I\"/home/venny/Desktop/Project Source File/.\"  -O3 -DNDEBUG   -std=gnu++14 -o CMakeFiles/MI3.dir/src/example_helper.cpp.o -c \"/home/venny/Desktop/Project Source File/src/example_helper.cpp\"",
+  "file": "/home/venny/Desktop/Project Source File/src/example_helper.cpp"
+},
+{
+  "directory": "/home/venny/Desktop/Project Source File/build",
+  "command": "/usr/bin/x86_64-linux-gnu-g++-5   -DLINUX -I\"/home/venny/Desktop/Project Source File/build\" -I\"/home/venny/Desktop/Project Source File\" -I\"/home/venny/Desktop/Project Source File/include\" -isystem /usr/local/include/opencv4 -I/usr/include/spinnaker -I\"/home/venny/Desktop/Project Source File/.\"  -O3 -DNDEBUG   -std=gnu++14 -o CMakeFiles/MI3.dir/src/Acquisition.cpp.o -c \"/home/venny/Desktop/Project Source File/src/Acquisition.cpp\"",
+  "file": "/home/venny/Desktop/Project Source File/src/Acquisition.cpp"
+}
+]
