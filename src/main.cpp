@@ -17,7 +17,7 @@ std::vector<cv::Mat> GenerateSinusoidImages(int width, int height) {
     const int numPhases = 3;
     const float wavelength_0 = 100; // wavelength (number of pixels per cycle)
     const float wavelength_1 = 150; // wavelength (number of pixels per cycle)
-    const int position=0;
+    const int position=0;           // default is vertical
 
     // allocate the images
     std::vector<cv::Mat> sineImages;
@@ -70,7 +70,7 @@ std::vector<cv::Mat> GenerateSinusoidImages(int width, int height) {
 // creates an Ajile project and returns in
 aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepeatCount=0, float frameTime_ms=-1, std::vector<aj::Component> components = std::vector<aj::Component>()) {
 
-    const char* projectName = "dmd_grayscale_sinewave_example";
+    const char* projectName = "MI3";
     if (frameTime_ms < 0)
         frameTime_ms = 1000;
     
