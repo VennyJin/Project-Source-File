@@ -47,7 +47,7 @@ enum triggerType
     HARDWARE
 };
 
-const triggerType chosenTrigger = SOFTWARE;
+const triggerType chosenTrigger = HARDWARE;
 
 // This function configures the camera to use a trigger. First, trigger mode is
 // set to off in order to select the trigger source. Once the trigger source
@@ -159,7 +159,8 @@ int ConfigureTrigger(INodeMap& nodeMap)
             }
 
             ptrTriggerSource->SetIntValue(ptrTriggerSourceHardware->GetValue());
-
+            CEnumerationPtr triggerActivation = nodeMap.GetNode("TriggerActivation");
+            triggerActivation->SetIntValue(triggerActivation->GetEntryByName("RisingEdge")->GetValue());
             cout << "Trigger source set to hardware..." << endl;
         }
 
@@ -381,7 +382,7 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
         cout << endl;
 
         // Retrieve, convert, and save images
-        const int unsigned k_numImages = 10;
+        const int unsigned k_numImages = 20;
 
         for (unsigned int imageCnt = 0; imageCnt < k_numImages; imageCnt++)
         {
@@ -391,7 +392,7 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
                 result = result | GrabNextImageByTrigger(nodeMap, pCam);
 
                 // Retrieve the next received image
-                ImagePtr pResultImage = pCam->GetNextImage(1000);
+                ImagePtr pResultImage = pCam->GetNextImage(100000);
 
                 if (pResultImage->IsIncomplete())
                 {
