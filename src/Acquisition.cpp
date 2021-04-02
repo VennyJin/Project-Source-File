@@ -1,34 +1,4 @@
-
-/**
- *  @example Acquisition.cpp
- *
- *  @brief Acquisition.cpp shows how to acquire images. It relies on
- *  information provided in the Enumeration example. Also, check out the
- *  ExceptionHandling and NodeMapInfo examples if you haven't already.
- *  ExceptionHandling shows the handling of standard and Spinnaker exceptions
- *  while NodeMapInfo explores retrieving information from various node types.
- *
- *  This example touches on the preparation and cleanup of a camera just before
- *  and just after the acquisition of images. Image retrieval and conversion,
- *  grabbing image data, and saving images are all covered as well.
- *
- *  Once comfortable with Acquisition, we suggest checking out
- *  AcquisitionMultipleCamera, NodeMapCallback, or SaveToAvi.
- *  AcquisitionMultipleCamera demonstrates simultaneously acquiring images from
- *  a number of cameras, NodeMapCallback serves as a good introduction to
- *  programming with callbacks and events, and SaveToAvi exhibits video creation.
- */
 #include "camera_initiation.h"
-
-//#include "spinnaker/Spinnaker.h"
-//#include <spinnaker/SpinGenApi/SpinnakerGenApi.h>
-//#include <iostream>
-//#include <sstream>
-//
-//using namespace Spinnaker;
-//using namespace Spinnaker::GenApi;
-//using namespace Spinnaker::GenICam;
-//using namespace std;
 
 #ifdef _DEBUG
 // Disables heartbeat on GEV cameras so debugging does not incur timeout errors
@@ -119,6 +89,8 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
         //
         // Retrieve enumeration node from nodemap
         CEnumerationPtr ptrAcquisitionMode = nodeMap.GetNode("AcquisitionMode");
+
+        // warning info
         if (!IsAvailable(ptrAcquisitionMode) || !IsWritable(ptrAcquisitionMode))
         {
             cout << "Unable to set acquisition mode to continuous (enum retrieval). Aborting..." << endl << endl;
@@ -127,6 +99,8 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
 
         // Retrieve entry node from enumeration node
         CEnumEntryPtr ptrAcquisitionModeContinuous = ptrAcquisitionMode->GetEntryByName("Continuous");
+
+        // warning info
         if (!IsAvailable(ptrAcquisitionModeContinuous) || !IsReadable(ptrAcquisitionModeContinuous))
         {
             cout << "Unable to set acquisition mode to continuous (entry retrieval). Aborting..." << endl << endl;
@@ -153,7 +127,6 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
         cout << endl << endl << "*** END OF DEBUG ***" << endl << endl;
 #endif
 
-        //
         // Begin acquiring images
         //
         // *** NOTES ***
@@ -170,16 +143,15 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
 
         cout << "Acquiring images..." << endl;
 
-        //
         // Retrieve device serial number for filename
         //
         // *** NOTES ***
-        // The device serial number is retrieved in order to keep cameras from
-        // overwriting one another. Grabbing image IDs could also accomplish
-        // this.
+        // The device serial number is retrieved in order to keep cameras from overwriting one another.
+        // Grabbing image IDs could also accomplish this.
         //
         gcstring deviceSerialNumber("");
         CStringPtr ptrStringSerial = nodeMapTLDevice.GetNode("DeviceSerialNumber");
+        // warning info
         if (IsAvailable(ptrStringSerial) && IsReadable(ptrStringSerial))
         {
             deviceSerialNumber = ptrStringSerial->GetValue();
@@ -189,13 +161,12 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
         cout << endl;
 
         // Retrieve, convert, and save images
-        const unsigned int k_numImages = 1;
+        const unsigned int k_numImages = 5;
 
         for (unsigned int imageCnt = 0; imageCnt < k_numImages; imageCnt++)
         {
             try
             {
-                //
                 // Retrieve next received image
                 //
                 // *** NOTES ***
@@ -209,7 +180,6 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
                 //
                 ImagePtr pResultImage = pCam->GetNextImage(1000);
 
-                //
                 // Ensure image completion
                 //
                 // *** NOTES ***
@@ -227,13 +197,10 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
                 }
                 else
                 {
-                    //
                     // Print image information; height and width recorded in pixels
                     //
                     // *** NOTES ***
-                    // Images have quite a bit of available metadata including
-                    // things such as CRC, image status, and offset values, to
-                    // name a few.
+                    // Images have quite a bit of available metadata including things such as CRC, image status, and offset values, to name a few.
                     //
                     const size_t width = pResultImage->GetWidth();
 
@@ -241,7 +208,6 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
 
                     cout << "Grabbed image " << imageCnt << ", width = " << width << ", height = " << height << endl;
 
-                    //
                     // Convert image to mono 8
                     //
                     // *** NOTES ***
@@ -265,20 +231,16 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
                     }
                     filename << imageCnt << ".jpg";
 
-                    //
                     // Save image
                     //
                     // *** NOTES ***
-                    // The standard practice of the examples is to use device
-                    // serial numbers to keep images of one device from
-                    // overwriting those of another.
+                    // The standard practice of the examples is to use device serial numbers to keep images of one device from overwriting those of another.
                     //
                     convertedImage->Save(filename.str().c_str());
 
                     cout << "Image saved at " << filename.str() << endl;
                 }
 
-                //
                 // Release image
                 //
                 // *** NOTES ***
@@ -297,7 +259,6 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
             }
         }
 
-        //
         // End acquisition
         //
         // *** NOTES ***
@@ -316,9 +277,7 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
     return result;
 }
 
-// This function prints the device information of the camera from the transport
-// layer; please see NodeMapInfo example for more in-depth comments on printing
-// device information from the nodemap.
+// This function prints the device information of the camera from the transport layer; please see NodeMapInfo example for more in-depth comments on printing device information from the nodemap.
 int PrintDeviceInfo(INodeMap& nodeMap)
 {
     int result = 0;
@@ -355,8 +314,7 @@ int PrintDeviceInfo(INodeMap& nodeMap)
     return result;
 }
 
-// This function acts as the body of the example; please see NodeMapInfo example
-// for more in-depth comments on setting up cameras.
+// This function acts as the body of the example; please see NodeMapInfo example for more in-depth comments on setting up cameras.
 int RunSingleCamera(CameraPtr pCam)
 {
     int result;
@@ -446,6 +404,7 @@ int InitializateCamera(void)
         }
     camList.Clear();
     system->ReleaseInstance();
+
     }
     catch (Spinnaker::Exception& e)
     {

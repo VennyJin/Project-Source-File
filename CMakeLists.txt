@@ -11,12 +11,12 @@ set(PROJ_NAME "MI3")
 set(PROJ_INCLUDES "")
 set(PROJ_LIBRARIES "")
 set(SOURCE
-${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
-${CMAKE_CURRENT_LIST_DIR}/src/example_helper.cpp
-${CMAKE_CURRENT_LIST_DIR}/src/Acquisition.cpp
+#${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
+#${CMAKE_CURRENT_LIST_DIR}/src/example_helper.cpp
+#${CMAKE_CURRENT_LIST_DIR}/src/Acquisition.cpp
 
 ############external test files #######
-##${CMAKE_CURRENT_LIST_DIR}/src/Trigger.cpp
+${CMAKE_CURRENT_LIST_DIR}/src/testcode/Trigger.cpp
 ##${CMAKE_CURRENT_LIST_DIR}/src/dmd_grayscale_triggerin_example.cpp
 )
 message(------project name : ${PROJ_NAME} ---------)
