@@ -44,6 +44,44 @@ std::vector<cv::Mat> GenerateSinusoidImages(int width, int height) {
 
 }
 
+void TriggerSetting(Project project){
+    // get the component indices
+    int controllerIndex = 0;
+    for (int index=0; index<project.Components().size(); index++) {
+        DeviceType_e deviceType = project.Components()[index].DeviceType().HardwareType();
+        if (deviceType == aj::AJILE_CONTROLLER_DEVICE_TYPE ||
+            deviceType == aj::AJILE_2PORT_CONTROLLER_DEVICE_TYPE ||
+            deviceType == aj::AJILE_3PORT_CONTROLLER_DEVICE_TYPE)
+            controllerIndex = index;
+    }
+
+    int dmdIndex = project.GetComponentIndexWithDeviceType(aj::DMD_4500_DEVICE_TYPE);
+
+    // configure the external input triggers of the Ajile controller component to be rising edge
+    // (Note that the default is rising edge. This step can therefore be skipped but is here for demonstration purposes only).
+    vector<aj::ExternalTriggerSetting> inputTriggerSettings = project.Components()[controllerIndex].InputTriggerSettings();
+    vector<aj::ExternalTriggerSetting> outputTriggerSettings = project.Components()[controllerIndex].OutputTriggerSettings();
+    for (int index=0; index<outputTriggerSettings.size(); index++)
+    {
+        inputTriggerSettings[index] = aj::ExternalTriggerSetting(aj::RISING_EDGE);
+        outputTriggerSettings[index] = aj::ExternalTriggerSetting(aj::RISING_EDGE, aj::FromMSec(500));
+    }
+    project.SetTriggerSettings(controllerIndex, inputTriggerSettings, outputTriggerSettings);
+
+    // create a trigger rule to connect external trigger input 1 to DMD start frame
+    aj::TriggerRule extTrigInToDMDStartFrame;
+    extTrigInToDMDStartFrame.AddTriggerFromDevice(aj::TriggerRulePair(controllerIndex, aj::EXT_TRIGGER_INPUT_1));
+    extTrigInToDMDStartFrame.SetTriggerToDevice(aj::TriggerRulePair(dmdIndex, aj::START_SEQUENCE_ITEM));
+
+    // create a trigger rule to connect the DMD frame started to the external output trigger 0
+    aj::TriggerRule dmdSeqItemStartedToExtTrigOut;
+    dmdSeqItemStartedToExtTrigOut.AddTriggerFromDevice(aj::TriggerRulePair(dmdIndex, aj::SEQUENCE_ITEM_STARTED));
+    dmdSeqItemStartedToExtTrigOut.SetTriggerToDevice(aj::TriggerRulePair(controllerIndex, aj::EXT_TRIGGER_OUTPUT_1));
+    // add the trigger rule to the project
+    project.AddTriggerRule(dmdSeqItemStartedToExtTrigOut);
+    // add the trigger rule to the project
+    project.AddTriggerRule(extTrigInToDMDStartFrame);
+}
 // creates an Ajile project and returns in
 aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepeatCount=0, float frameTime_ms=-1, std::vector<aj::Component> components = std::vector<aj::Component>()) {
 
@@ -68,32 +106,7 @@ aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepe
         project.AddComponent(dmdComponent);
     }
 
-    // get the component indices
-    int controllerIndex = 0;
-    for (int index=0; index<project.Components().size(); index++) {
-        DeviceType_e deviceType = project.Components()[index].DeviceType().HardwareType();
-        if (deviceType == aj::AJILE_CONTROLLER_DEVICE_TYPE ||
-            deviceType == aj::AJILE_2PORT_CONTROLLER_DEVICE_TYPE ||
-            deviceType == aj::AJILE_3PORT_CONTROLLER_DEVICE_TYPE)
-            controllerIndex = index;
-    }
-    int dmdIndex = project.GetComponentIndexWithDeviceType(aj::DMD_4500_DEVICE_TYPE);
-
-    // configure the external input triggers of the Ajile controller component to be rising edge
-    // (Note that the default is rising edge. This step can therefore be skipped but is here for demonstration purposes only).
-    vector<aj::ExternalTriggerSetting> inputTriggerSettings = project.Components()[controllerIndex].InputTriggerSettings();
-    vector<aj::ExternalTriggerSetting> outputTriggerSettings = project.Components()[controllerIndex].OutputTriggerSettings();
-    for (int index=0; index<outputTriggerSettings.size(); index++)
-        inputTriggerSettings[index] = aj::ExternalTriggerSetting(aj::RISING_EDGE);
-    project.SetTriggerSettings(controllerIndex, inputTriggerSettings, outputTriggerSettings);
-
-
-    // create a trigger rule to connect external trigger input 1 to DMD start frame
-    aj::TriggerRule extTrigInToDMDStartFrame;
-    extTrigInToDMDStartFrame.AddTriggerFromDevice(aj::TriggerRulePair(controllerIndex, aj::EXT_TRIGGER_INPUT_1));
-    extTrigInToDMDStartFrame.SetTriggerToDevice(aj::TriggerRulePair(dmdIndex, aj::START_SEQUENCE_ITEM));
-    // add the trigger rule to the project
-    project.AddTriggerRule(extTrigInToDMDStartFrame);
+    TriggerSetting(project);
 
     // generate a list of sinudoid images (which are opencv matrices)
     std::vector<cv::Mat> sineImages = GenerateSinusoidImages(DMD_IMAGE_WIDTH_MAX, DMD_IMAGE_HEIGHT_MAX);
