@@ -33,6 +33,7 @@
 #include "SpinGenApi/SpinnakerGenApi.h"
 #include <iostream>
 #include <sstream>
+#include <opencv2/opencv.hpp>
 
 using namespace Spinnaker;
 using namespace Spinnaker::GenApi;
@@ -382,12 +383,13 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
         cout << endl;
 
         // Retrieve, convert, and save images
-        const int unsigned k_numImages = 5;
+        const int unsigned k_numImages = 6;
 
         for (unsigned int imageCnt = 0; imageCnt < k_numImages; imageCnt++)
         {
             try
             {
+                double t = (double)cv::getTickCount();
                 // Retrieve the next image from the trigger
                 result = result | GrabNextImageByTrigger(nodeMap, pCam);
 
@@ -402,9 +404,7 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
                 else
                 {
                     // Print image information
-                    cout << "Grabbed image " << imageCnt << ", width = " << pResultImage->GetWidth()
-                         << ", height = " << pResultImage->GetHeight() << endl;
-
+                    //cout << "Grabbed image " << imageCnt << ", width = " << pResultImage->GetWidth() << ", height = " << pResultImage->GetHeight() << endl;
                     // Convert image to mono 8
                     ImagePtr convertedImage = pResultImage->Convert(PixelFormat_Mono8, HQ_LINEAR);
 
@@ -421,9 +421,10 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
                     // Save image
                     convertedImage->Save(filename.str().c_str());
 
-                    cout << "Image saved at " << filename.str() << endl;
+                    //cout << "Image saved at " << filename.str() << endl;
                 }
-
+                    t = ((double)cv::getTickCount() - t)/cv::getTickFrequency()*1000 ; 
+                    cout << "Times passed in miliseconds: " << t << endl;
                 // Release image
                 pResultImage->Release();
 

@@ -6,82 +6,87 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#include <opencv2/opencv.hpp>
+//#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+using namespace cv;
 
 #include "example_helper.h"
 
 // helper function which create a set of horizontal and vertical sinusoid images with difference phases
+
 std::vector<cv::Mat> GenerateSinusoidImages(int width, int height) {
     
     const int numPhases = 3;
-    const float wavelength = 100; // wavelength (number of pixels per cycle)
+    const float wavelength_0 = 300; // wavelength (number of pixels per cycle)
+    const float wavelength_1 = 200;
+    const int position = 0;
 
     // allocate the images
     std::vector<cv::Mat> sineImages;
     for (int i=0; i<numPhases*2; i++)
-        sineImages.push_back(cv::Mat::zeros(height, width, CV_8UC1));
-
-    for (int i=0; i<numPhases; i++) {
-        float phase = i * 1.0 / (float)numPhases;
-        float sineValue = 0.0;
-        for (int c=0; c<width; c++) {
-            // compute the 1-D sine value
-            sineValue = sin((float)c / wavelength * 2*M_PI + phase * 2*M_PI);
-            // rescale it to be a 16-bit number
-            sineValue = (sineValue + 1) * 0xff/2.0;
-            // create the 2-D sine images by expanding each 1-D sine value into a rectangle across the entire image
-            cv::rectangle(sineImages[i], cv::Point(c,0), cv::Point(c,height), (unsigned char)sineValue, -1);
-        }
-        // repeat for the horizontal images
-        for (int r=0; r<height; r++) {
-            sineValue = sin((float)r / wavelength * 2*M_PI + phase * 2*M_PI);
-            sineValue = (sineValue + 1) * 0xff/2.0;
-            cv::rectangle(sineImages[numPhases+i], cv::Point(0,r), cv::Point(width,r), (unsigned char)sineValue, -1);
-        }
-    }
-    
-    return sineImages;
-
-}
-
-void TriggerSetting(Project project){
-    // get the component indices
-    int controllerIndex = 0;
-    for (int index=0; index<project.Components().size(); index++) {
-        DeviceType_e deviceType = project.Components()[index].DeviceType().HardwareType();
-        if (deviceType == aj::AJILE_CONTROLLER_DEVICE_TYPE ||
-            deviceType == aj::AJILE_2PORT_CONTROLLER_DEVICE_TYPE ||
-            deviceType == aj::AJILE_3PORT_CONTROLLER_DEVICE_TYPE)
-            controllerIndex = index;
-    }
-
-    int dmdIndex = project.GetComponentIndexWithDeviceType(aj::DMD_4500_DEVICE_TYPE);
-
-    // configure the external input triggers of the Ajile controller component to be rising edge
-    // (Note that the default is rising edge. This step can therefore be skipped but is here for demonstration purposes only).
-    vector<aj::ExternalTriggerSetting> inputTriggerSettings = project.Components()[controllerIndex].InputTriggerSettings();
-    vector<aj::ExternalTriggerSetting> outputTriggerSettings = project.Components()[controllerIndex].OutputTriggerSettings();
-    for (int index=0; index<outputTriggerSettings.size(); index++)
+        sineImages.push_back(cv::Mat::zeros(height, width, CV_16UC1));
+    // Start Generate sinusoid Images
+    if (position ==0)
     {
-        inputTriggerSettings[index] = aj::ExternalTriggerSetting(aj::RISING_EDGE);
-        outputTriggerSettings[index] = aj::ExternalTriggerSetting(aj::RISING_EDGE, aj::FromMSec(500));
+        // Generate 3 phase image for wavelength #1
+        for (int i=0; i<numPhases; i++) 
+        {
+            float phase = i * 1.0 / (float)numPhases;
+            float sineValue = 0.0;
+            for (int c=0; c<width; c++) 
+            {
+                // compute the 1-D sine value
+                sineValue = sin((float)c / wavelength_0 * 2*M_PI + phase * 2*M_PI);
+                // rescale it to be a 16-bit number
+                sineValue = (sineValue + 1) * 0xffff/2.0;
+                // create the 2-D sine images by expanding each 1-D sine value into a rectangle across the entire image
+                cv::rectangle(sineImages[i], cv::Point(c,0), cv::Point(c,height), (unsigned short)sineValue, -1);
+            }
+        }
+        // Generate 3 phase image for wavelength #2
+        for (int i=0; i<numPhases; i++) 
+        {
+            float phase = i * 1.0 / (float)numPhases;
+            float sineValue = 0.0;
+            for (int c=0; c<width; c++) 
+            {
+                sineValue = sin((float)c / wavelength_1 * 2*M_PI + phase * 2*M_PI);
+                sineValue = (sineValue + 1) * 0xffff/2.0;
+                cv::rectangle(sineImages[numPhases + i], cv::Point(c,0), cv::Point(c,height), (unsigned short)sineValue, -1);
+            }
+        }
     }
-    project.SetTriggerSettings(controllerIndex, inputTriggerSettings, outputTriggerSettings);
+    // horizontal images 
+    else if (position ==1)
+    {
+        for (int i=0; i<numPhases; i++) 
+        {
+            float phase = i * 1.0 / (float)numPhases;
+            float sineValue = 0.0;
+            for (int r=0; r<height; r++) 
+            {
+                sineValue = sin((float)r / wavelength_0 * 2*M_PI + phase * 2*M_PI);
+                sineValue = (sineValue + 1) * 0xffff/2.0;
+                cv::rectangle(sineImages[i], cv::Point(0,r), cv::Point(width,r), (unsigned short)sineValue, -1);            
+            }
+        }
+        for (int i=0; i<numPhases; i++) 
+        {
+            float phase = i * 1.0 / (float)numPhases;
+            float sineValue = 0.0;
+            for (int r=0; r<height; r++) {
+                sineValue = sin((float)r / wavelength_1 * 2*M_PI + phase * 2*M_PI);
+                sineValue = (sineValue + 1) * 0xffff/2.0;
+                cv::rectangle(sineImages[numPhases+i], cv::Point(0,r), cv::Point(width,r), (unsigned short)sineValue, -1);            
+            }
+        }
+    }
 
-    // create a trigger rule to connect external trigger input 1 to DMD start frame
-    aj::TriggerRule extTrigInToDMDStartFrame;
-    extTrigInToDMDStartFrame.AddTriggerFromDevice(aj::TriggerRulePair(controllerIndex, aj::EXT_TRIGGER_INPUT_1));
-    extTrigInToDMDStartFrame.SetTriggerToDevice(aj::TriggerRulePair(dmdIndex, aj::START_SEQUENCE_ITEM));
-
-    // create a trigger rule to connect the DMD frame started to the external output trigger 0
-    aj::TriggerRule dmdSeqItemStartedToExtTrigOut;
-    dmdSeqItemStartedToExtTrigOut.AddTriggerFromDevice(aj::TriggerRulePair(dmdIndex, aj::SEQUENCE_ITEM_STARTED));
-    dmdSeqItemStartedToExtTrigOut.SetTriggerToDevice(aj::TriggerRulePair(controllerIndex, aj::EXT_TRIGGER_OUTPUT_1));
-    // add the trigger rule to the project
-    project.AddTriggerRule(dmdSeqItemStartedToExtTrigOut);
-    // add the trigger rule to the project
-    project.AddTriggerRule(extTrigInToDMDStartFrame);
+    return sineImages;
 }
+
 // creates an Ajile project and returns in
 aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepeatCount=0, float frameTime_ms=-1, std::vector<aj::Component> components = std::vector<aj::Component>()) {
 
@@ -106,7 +111,32 @@ aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepe
         project.AddComponent(dmdComponent);
     }
 
-    TriggerSetting(project);
+    // get the component indices
+    int controllerIndex = 0;
+    for (int index=0; index<project.Components().size(); index++) {
+        DeviceType_e deviceType = project.Components()[index].DeviceType().HardwareType();
+        if (deviceType == aj::AJILE_CONTROLLER_DEVICE_TYPE ||
+            deviceType == aj::AJILE_2PORT_CONTROLLER_DEVICE_TYPE ||
+            deviceType == aj::AJILE_3PORT_CONTROLLER_DEVICE_TYPE)
+            controllerIndex = index;
+    }
+    int dmdIndex = project.GetComponentIndexWithDeviceType(aj::DMD_4500_DEVICE_TYPE);
+
+    // configure the external input triggers of the Ajile controller component to be rising edge
+    // (Note that the default is rising edge. This step can therefore be skipped but is here for demonstration purposes only).
+    vector<aj::ExternalTriggerSetting> inputTriggerSettings = project.Components()[controllerIndex].InputTriggerSettings();
+    vector<aj::ExternalTriggerSetting> outputTriggerSettings = project.Components()[controllerIndex].OutputTriggerSettings();
+    for (int index=0; index<outputTriggerSettings.size(); index++)
+        inputTriggerSettings[index] = aj::ExternalTriggerSetting(aj::RISING_EDGE);
+    project.SetTriggerSettings(controllerIndex, inputTriggerSettings, outputTriggerSettings);
+
+
+    // create a trigger rule to connect external trigger input 1 to DMD start frame
+    aj::TriggerRule extTrigInToDMDStartFrame;
+    extTrigInToDMDStartFrame.AddTriggerFromDevice(aj::TriggerRulePair(controllerIndex, aj::EXT_TRIGGER_INPUT_1));
+    extTrigInToDMDStartFrame.SetTriggerToDevice(aj::TriggerRulePair(dmdIndex, aj::START_SEQUENCE_ITEM));
+    // add the trigger rule to the project
+    project.AddTriggerRule(extTrigInToDMDStartFrame);
 
     // generate a list of sinudoid images (which are opencv matrices)
     std::vector<cv::Mat> sineImages = GenerateSinusoidImages(DMD_IMAGE_WIDTH_MAX, DMD_IMAGE_HEIGHT_MAX);
@@ -141,9 +171,31 @@ aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepe
     return project;
 }
 
+int imagewrite(void)
+{
+    std::vector<cv::Mat> sineImages = GenerateSinusoidImages(DMD_IMAGE_WIDTH_MAX, DMD_IMAGE_HEIGHT_MAX);
+    int numImages = sineImages.size();
+    int result = -1;
+    vector<int> compressionpara;
+    compressionpara.push_back(IMWRITE_JPEG_QUALITY);
 
-int main(int argc, char **argv) {
+    compressionpara.push_back(9);
+    for (int i=0; i<numImages; i++) 
+    {
+                ostringstream filename;
+                filename << "SineImage-";
+                filename << i << ".png";
+                // Save image
+                result = cv::imwrite(filename.str().c_str(),sineImages[i],compressionpara);
+    }
+    getchar();
+    return result;
+}
 
+int main(int argc, char **argv) 
+{
+    // image write function
+    //return imagewrite();
+    
     return RunExample(&CreateProject, argc, argv);
-
 }

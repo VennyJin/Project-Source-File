@@ -7,19 +7,25 @@ project(${ProjectId})
 set(CMAKE_CXX_STANDARD 14)
 
 # Setting the variables
-set(PROJ_NAME "MI3")
+set(CAM_PROJ_NAME "camera")
+set(PRJ_PROJ_NAME "projector")
 set(PROJ_INCLUDES "")
 set(PROJ_LIBRARIES "")
-set(SOURCE
-${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
-${CMAKE_CURRENT_LIST_DIR}/src/example_helper.cpp
-${CMAKE_CURRENT_LIST_DIR}/src/Acquisition.cpp
 
+set(SOURCE1
+#${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
+#${CMAKE_CURRENT_LIST_DIR}/src/example_helper.cpp
+#${CMAKE_CURRENT_LIST_DIR}/src/Acquisition.cpp
 ############external test files #######
-#${CMAKE_CURRENT_LIST_DIR}/src/testcode/Trigger.cpp
+${CMAKE_CURRENT_LIST_DIR}/src/testcode/Trigger.cpp
 #${CMAKE_CURRENT_LIST_DIR}/src/dmd_grayscale_triggerin_example.cpp
 )
-message(------project name : ${PROJ_NAME} ---------)
+
+set(SOURCE2
+${CMAKE_CURRENT_LIST_DIR}/src/example_helper.cpp
+${CMAKE_CURRENT_LIST_DIR}/src/dmd_grayscale_triggerin_example.cpp
+)
+#message(------project name : ${PROJ_NAME} ---------)
 
 ##########################################################
 
@@ -59,6 +65,7 @@ if(WIN32)
   link_directories(
     "C:/Program Files/Point Grey Research/Spinnaker/lib64/vs2015")
 endif(WIN32)
+
 if(UNIX)
   add_definitions(-DLINUX)
   set(Spinnaker_LIBS "libSpinnaker.so")
@@ -76,13 +83,14 @@ INCLUDE_DIRECTORIES(
   #${Spinnaker_INCLUDE_DIR} 
 )
 ##########################################################
-# Project
-add_executable(${PROJ_NAME} ${SOURCE})
+# CAM Project
+add_executable(${CAM_PROJ_NAME} ${SOURCE1})
+target_link_libraries(${CAM_PROJ_NAME} ${OpenCV_LIBS} ${Spinnaker_LIBS} -lajiledriver)
+target_include_directories(${CAM_PROJ_NAME} PUBLIC ${PROJECT_SOURCE_DIR} ${OpenCV_INCLUDE_DIRS} ${Spinnaker_INCLUDE_DIR} ./)
 
-target_link_libraries(${PROJ_NAME} ${OpenCV_LIBS} ${Spinnaker_LIBS} -lajiledriver)
-
-target_include_directories(${PROJ_NAME} PUBLIC ${PROJECT_SOURCE_DIR} ${OpenCV_INCLUDE_DIRS} ${Spinnaker_INCLUDE_DIR} ./)
-
+add_executable(${PRJ_PROJ_NAME} ${SOURCE2})
+target_link_libraries(${PRJ_PROJ_NAME} ${OpenCV_LIBS} ${Spinnaker_LIBS} -lajiledriver)
+target_include_directories(${PRJ_PROJ_NAME} PUBLIC ${PROJECT_SOURCE_DIR} ${OpenCV_INCLUDE_DIRS} ${Spinnaker_INCLUDE_DIR} ./)
 #message(: ${CMAKE_CURRENT_BINARY_DIR})
 #message(: ${CMAKE_CURRENT_SOURCE_DIR})
 #message(: ${OpenCV_INCLUDE_DIRS})
