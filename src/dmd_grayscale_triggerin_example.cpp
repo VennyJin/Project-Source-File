@@ -6,7 +6,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-//#include <opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -19,14 +19,14 @@ using namespace cv;
 std::vector<cv::Mat> GenerateSinusoidImages(int width, int height) {
     
     const int numPhases = 3;
-    const float wavelength_0 = 300; // wavelength (number of pixels per cycle)
+    const float wavelength_0 = 100; // wavelength (number of pixels per cycle)
     const float wavelength_1 = 200;
     const int position = 0;
 
     // allocate the images
     std::vector<cv::Mat> sineImages;
     for (int i=0; i<numPhases*2; i++)
-        sineImages.push_back(cv::Mat::zeros(height, width, CV_16UC1));
+        sineImages.push_back(cv::Mat::zeros(height, width, CV_8UC1));
     // Start Generate sinusoid Images
     if (position ==0)
     {
@@ -87,29 +87,8 @@ std::vector<cv::Mat> GenerateSinusoidImages(int width, int height) {
     return sineImages;
 }
 
-// creates an Ajile project and returns in
-aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepeatCount=0, float frameTime_ms=-1, std::vector<aj::Component> components = std::vector<aj::Component>()) {
-
-    const char* projectName = "dmd_grayscale_triggerin_example";
-    if (frameTime_ms < 0)
-        frameTime_ms = 1000;
-    
-    // create a new project
-    aj::Project project(projectName);
-
-    // set the components for the project if they were provided, or create default ones if not
-    if (components.size() > 0)
-        project.SetComponents(components);
-    else {
-        // these defaults are for a DMD_4500 device on a standalone board. 
-        // Either pass in the proper components or modify if they are different from your setup.
-        aj::Component controllerComponent;
-        controllerComponent.CreateComponentForDevice(aj::DeviceDescriptor(aj::AJILE_CONTROLLER_DEVICE_TYPE));
-        project.AddComponent(controllerComponent);
-        aj::Component dmdComponent;
-        dmdComponent.CreateComponentForDevice(aj::DeviceDescriptor(aj::DMD_4500_DEVICE_TYPE));
-        project.AddComponent(dmdComponent);
-    }
+void SettingupTrigger(aj::Project project)
+{
 
     // get the component indices
     int controllerIndex = 0;
@@ -127,9 +106,11 @@ aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepe
     vector<aj::ExternalTriggerSetting> inputTriggerSettings = project.Components()[controllerIndex].InputTriggerSettings();
     vector<aj::ExternalTriggerSetting> outputTriggerSettings = project.Components()[controllerIndex].OutputTriggerSettings();
     for (int index=0; index<outputTriggerSettings.size(); index++)
+    {
         inputTriggerSettings[index] = aj::ExternalTriggerSetting(aj::RISING_EDGE);
+        outputTriggerSettings[index] = aj::ExternalTriggerSetting(aj::RISING_EDGE, aj::FromMSec(100));
+    }
     project.SetTriggerSettings(controllerIndex, inputTriggerSettings, outputTriggerSettings);
-
 
     // create a trigger rule to connect external trigger input 1 to DMD start frame
     aj::TriggerRule extTrigInToDMDStartFrame;
@@ -137,6 +118,65 @@ aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepe
     extTrigInToDMDStartFrame.SetTriggerToDevice(aj::TriggerRulePair(dmdIndex, aj::START_SEQUENCE_ITEM));
     // add the trigger rule to the project
     project.AddTriggerRule(extTrigInToDMDStartFrame);
+
+    // create a trigger rule to connect the DMD frame started to the external output trigger 0
+    aj::TriggerRule dmdSeqItemStartedToExtTrigOut;
+    dmdSeqItemStartedToExtTrigOut.AddTriggerFromDevice(aj::TriggerRulePair(dmdIndex, aj::SEQUENCE_ITEM_STARTED));
+    dmdSeqItemStartedToExtTrigOut.SetTriggerToDevice(aj::TriggerRulePair(controllerIndex, aj::EXT_TRIGGER_OUTPUT_1));
+    // add the trigger rule to the project
+    project.AddTriggerRule(dmdSeqItemStartedToExtTrigOut);
+    cout<<"trigger setting configured"<<endl;
+}
+
+// creates an Ajile project and returns in
+aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepeatCount=0, float frameTime_ms=-1, std::vector<aj::Component> components = std::vector<aj::Component>()) {
+
+    const char* projectName = "dmd_grayscale_triggerin_example";
+    if (frameTime_ms < 0)
+    frameTime_ms = 2000;
+    
+    // create a new project
+    aj::Project project(projectName);
+
+    // set the components for the project if they were provided
+    project.SetComponents(components);
+
+    //SettingupTrigger(project);
+    // get the component indices
+    int controllerIndex = 0;
+    for (int index=0; index<project.Components().size(); index++) {
+        DeviceType_e deviceType = project.Components()[index].DeviceType().HardwareType();
+        if (deviceType == aj::AJILE_CONTROLLER_DEVICE_TYPE ||
+            deviceType == aj::AJILE_2PORT_CONTROLLER_DEVICE_TYPE ||
+            deviceType == aj::AJILE_3PORT_CONTROLLER_DEVICE_TYPE)
+            controllerIndex = index;
+    }
+    int dmdIndex = project.GetComponentIndexWithDeviceType(aj::DMD_4500_DEVICE_TYPE);
+
+    // configure the external input triggers of the Ajile controller component to be rising edge
+    // (Note that the default is rising edge. This step can therefore be skipped but is here for demonstration purposes only).
+    vector<aj::ExternalTriggerSetting> inputTriggerSettings = project.Components()[controllerIndex].InputTriggerSettings();
+    vector<aj::ExternalTriggerSetting> outputTriggerSettings = project.Components()[controllerIndex].OutputTriggerSettings();
+    for (int index=0; index<outputTriggerSettings.size(); index++)
+    {
+        inputTriggerSettings[index] = aj::ExternalTriggerSetting(aj::RISING_EDGE);
+        outputTriggerSettings[index] = aj::ExternalTriggerSetting(aj::RISING_EDGE, aj::FromMSec(10));
+    }
+    project.SetTriggerSettings(controllerIndex, inputTriggerSettings, outputTriggerSettings);
+
+    // create a trigger rule to connect external trigger input 1 to DMD start frame
+    aj::TriggerRule extTrigInToDMDStartFrame;
+    extTrigInToDMDStartFrame.AddTriggerFromDevice(aj::TriggerRulePair(controllerIndex, aj::EXT_TRIGGER_INPUT_1));
+    extTrigInToDMDStartFrame.SetTriggerToDevice(aj::TriggerRulePair(dmdIndex, aj::START_SEQUENCE_ITEM));
+    // add the trigger rule to the project
+    project.AddTriggerRule(extTrigInToDMDStartFrame);
+
+    // create a trigger rule to connect the DMD frame started to the external output trigger 0
+    aj::TriggerRule dmdSeqItemStartedToExtTrigOut;
+    dmdSeqItemStartedToExtTrigOut.AddTriggerFromDevice(aj::TriggerRulePair(dmdIndex, aj::SEQUENCE_ITEM_STARTED));
+    dmdSeqItemStartedToExtTrigOut.SetTriggerToDevice(aj::TriggerRulePair(controllerIndex, aj::EXT_TRIGGER_OUTPUT_1));
+    // add the trigger rule to the project
+    project.AddTriggerRule(dmdSeqItemStartedToExtTrigOut);
 
     // generate a list of sinudoid images (which are opencv matrices)
     std::vector<cv::Mat> sineImages = GenerateSinusoidImages(DMD_IMAGE_WIDTH_MAX, DMD_IMAGE_HEIGHT_MAX);
@@ -195,7 +235,8 @@ int imagewrite(void)
 int main(int argc, char **argv) 
 {
     // image write function
-    //return imagewrite();
+    //imagewrite();
+    RunExample(&CreateProject, argc, argv);
     
-    return RunExample(&CreateProject, argc, argv);
+    return 0; 
 }
