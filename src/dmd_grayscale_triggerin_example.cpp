@@ -7,10 +7,10 @@
 #include <math.h>
 
 #include <opencv2/opencv.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-using namespace cv;
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/imgproc/imgproc.hpp>
+//using namespace cv;
 
 #include "example_helper.h"
 
@@ -26,7 +26,7 @@ std::vector<cv::Mat> GenerateSinusoidImages(int width, int height) {
     // allocate the images
     std::vector<cv::Mat> sineImages;
     for (int i=0; i<numPhases*2; i++)
-        sineImages.push_back(cv::Mat::zeros(height, width, CV_8UC1));
+        sineImages.push_back(cv::Mat::zeros(height,width,CV_16UC1));
     // Start Generate sinusoid Images
     if (position ==0)
     {
@@ -132,8 +132,10 @@ void SettingupTrigger(aj::Project project)
 aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepeatCount=0, float frameTime_ms=-1, std::vector<aj::Component> components = std::vector<aj::Component>()) {
 
     const char* projectName = "dmd_grayscale_triggerin_example";
+    float frame_rate = 10;
     if (frameTime_ms < 0)
-    frameTime_ms = 2000;
+    //frameTime_ms = 50;
+    frameTime_ms = 1000/2/frame_rate;
     
     // create a new project
     aj::Project project(projectName);
@@ -191,7 +193,7 @@ aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepe
 
         // convert the sinusoid image to an Ajile image. Note we convert to an 8-bit image here.
         aj::Image image;
-        image.ReadFromMemory((unsigned char*)sineImages[i].data, sineImages[i].rows, sineImages[i].cols, 1, 8, aj::ROW_MAJOR_ORDER, 0, 0, 0, 8, aj::UNDEFINED_MAJOR_ORDER);
+        image.ReadFromMemory((unsigned char*)sineImages[i].data, sineImages[i].rows, sineImages[i].cols, 1, 16, aj::ROW_MAJOR_ORDER, 0, 0, 0, 8, aj::UNDEFINED_MAJOR_ORDER);
         
         // create a sequence item to display the 8 bitplanes of the sine image with the default minimum timing
         aj::SequenceItem sequenceItem(sequenceID);
@@ -217,7 +219,7 @@ int imagewrite(void)
     int numImages = sineImages.size();
     int result = -1;
     vector<int> compressionpara;
-    compressionpara.push_back(IMWRITE_JPEG_QUALITY);
+    //compressionpara.push_back(IMWRITE_JPEG_QUALITY);
 
     compressionpara.push_back(9);
     for (int i=0; i<numImages; i++) 
