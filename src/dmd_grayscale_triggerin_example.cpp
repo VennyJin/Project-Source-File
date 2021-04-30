@@ -19,67 +19,63 @@
 std::vector<cv::Mat> GenerateSinusoidImages(int width, int height) {
     
     const int numPhases = 3;
-    const float wavelength_0 = 100; // wavelength (number of pixels per cycle)
-    const float wavelength_1 = 200;
+    const int numspatialfreq= 5;
+    float wavelength[numspatialfreq];
+    wavelength[0] = 0; // wavelength (number of pixels per cycle)
+    wavelength[1] = 1824/284*0.05;
+    wavelength[2] = 1824/284*0.1;
+    wavelength[3] = 1824/284*0.15;
+    wavelength[4] = 1824/284*0.2;
+    
     const int position = 0;
 
     // allocate the images
     std::vector<cv::Mat> sineImages;
-    for (int i=0; i<numPhases*2; i++)
+    for (int i=0; i<numPhases*numspatialfreq; i++)
         sineImages.push_back(cv::Mat::zeros(height,width,CV_16UC1));
     // Start Generate sinusoid Images
     if (position ==0)
     {
         // Generate 3 phase image for wavelength #1
-        for (int i=0; i<numPhases; i++) 
+        for (int m=0; m<numspatialfreq; m++)
         {
-            float phase = i * 1.0 / (float)numPhases;
-            float sineValue = 0.0;
-            for (int c=0; c<width; c++) 
+            for (int i=0; i<numPhases; i++) 
             {
-                // compute the 1-D sine value
-                sineValue = sin((float)c / wavelength_0 * 2*M_PI + phase * 2*M_PI);
-                // rescale it to be a 16-bit number
-                sineValue = (sineValue + 1) * 0xffff/2.0;
-                // create the 2-D sine images by expanding each 1-D sine value into a rectangle across the entire image
-                cv::rectangle(sineImages[i], cv::Point(c,0), cv::Point(c,height), (unsigned short)sineValue, -1);
-            }
-        }
-        // Generate 3 phase image for wavelength #2
-        for (int i=0; i<numPhases; i++) 
-        {
-            float phase = i * 1.0 / (float)numPhases;
-            float sineValue = 0.0;
-            for (int c=0; c<width; c++) 
-            {
-                sineValue = sin((float)c / wavelength_1 * 2*M_PI + phase * 2*M_PI);
-                sineValue = (sineValue + 1) * 0xffff/2.0;
-                cv::rectangle(sineImages[numPhases + i], cv::Point(c,0), cv::Point(c,height), (unsigned short)sineValue, -1);
+                float phase = i * 1.0 / (float)numPhases;
+                float sineValue = 0.0;
+                for (int c=0; c<width; c++) 
+                {
+                    if (m==0)
+                    sineValue = sin(phase * 2*M_PI);
+                    else {
+                    // compute the 1-D sine value
+                    sineValue = sin((float)c / wavelength[m] * 2*M_PI + phase * 2*M_PI);
+                    }
+                    // rescale it to be a 16-bit number
+                    sineValue = (sineValue + 1) * 0xffff/2.0;
+                    // create the 2-D sine images by expanding each 1-D sine value into a rectangle across the entire image
+                    cv::rectangle(sineImages[i+m*numPhases], cv::Point(c,0), cv::Point(c,height), (unsigned short)sineValue, -1);
+                }
+                //int k = i + m * numPhases;
+                //printf("this is the %d image\n",k);
             }
         }
     }
     // horizontal images 
     else if (position ==1)
     {
-        for (int i=0; i<numPhases; i++) 
+        for (int m=0;m<5;m++)
         {
-            float phase = i * 1.0 / (float)numPhases;
-            float sineValue = 0.0;
-            for (int r=0; r<height; r++) 
+            for (int i=0; i<numPhases; i++) 
             {
-                sineValue = sin((float)r / wavelength_0 * 2*M_PI + phase * 2*M_PI);
-                sineValue = (sineValue + 1) * 0xffff/2.0;
-                cv::rectangle(sineImages[i], cv::Point(0,r), cv::Point(width,r), (unsigned short)sineValue, -1);            
-            }
-        }
-        for (int i=0; i<numPhases; i++) 
-        {
-            float phase = i * 1.0 / (float)numPhases;
-            float sineValue = 0.0;
-            for (int r=0; r<height; r++) {
-                sineValue = sin((float)r / wavelength_1 * 2*M_PI + phase * 2*M_PI);
-                sineValue = (sineValue + 1) * 0xffff/2.0;
-                cv::rectangle(sineImages[numPhases+i], cv::Point(0,r), cv::Point(width,r), (unsigned short)sineValue, -1);            
+                float phase = i * 1.0 / (float)numPhases;
+                float sineValue = 0.0;
+                for (int r=0; r<height; r++) 
+                {
+                    sineValue = sin((float)r / wavelength[0] * 2*M_PI + phase * 2*M_PI);
+                    sineValue = (sineValue + 1) * 0xffff/2.0;
+                    cv::rectangle(sineImages[i+m*numPhases], cv::Point(0,r), cv::Point(width,r), (unsigned short)sineValue, -1);            
+                }
             }
         }
     }

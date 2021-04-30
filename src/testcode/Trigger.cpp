@@ -383,7 +383,7 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
         cout << endl;
 
         // Retrieve, convert, and save images
-        const int unsigned k_numImages = 6;
+        const int unsigned k_numImages = 15;
 
         for (unsigned int imageCnt = 0; imageCnt < k_numImages; imageCnt++)
         {
