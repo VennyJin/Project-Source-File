@@ -406,7 +406,7 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
                     // Print image information
                     //cout << "Grabbed image " << imageCnt << ", width = " << pResultImage->GetWidth() << ", height = " << pResultImage->GetHeight() << endl;
                     // Convert image to mono 8
-                    ImagePtr convertedImage = pResultImage->Convert(PixelFormat_Mono8, HQ_LINEAR);
+                    ImagePtr convertedImage = pResultImage->Convert(PixelFormat_Mono8, DEFAULT);
 
                     // Create a unique filename
                     ostringstream filename;
@@ -416,7 +416,7 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
                     {
                         filename << deviceSerialNumber.c_str() << "-";
                     }
-                    filename << imageCnt << ".jpg";
+                    filename << imageCnt << ".png";
 
                     // Save image
                     convertedImage->Save(filename.str().c_str());

@@ -23,9 +23,9 @@ std::vector<cv::Mat> GenerateSinusoidImages(int width, int height) {
     float wavelength[numspatialfreq];
     wavelength[0] = 0; // wavelength (number of pixels per cycle)
     wavelength[1] = 1824/284*0.05;
-    wavelength[2] = 1824/284*0.1;
+    wavelength[2] = 1824/284*0.10;
     wavelength[3] = 1824/284*0.15;
-    wavelength[4] = 1824/284*0.2;
+    wavelength[4] = 1824/284*0.20;
     
     const int position = 0;
 
@@ -128,7 +128,7 @@ void SettingupTrigger(aj::Project project)
 aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepeatCount=0, float frameTime_ms=-1, std::vector<aj::Component> components = std::vector<aj::Component>()) {
 
     const char* projectName = "dmd_grayscale_triggerin_example";
-    float frame_rate = 10;
+    float frame_rate = 5;
     if (frameTime_ms < 0)
     //frameTime_ms = 50;
     frameTime_ms = 1000/2/frame_rate;
