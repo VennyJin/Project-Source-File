@@ -22,10 +22,10 @@ std::vector<cv::Mat> GenerateSinusoidImages(int width, int height) {
     const int numspatialfreq= 5;
     float wavelength[numspatialfreq];
     wavelength[0] = 0; // wavelength (number of pixels per cycle)
-    wavelength[1] = 1824/284*0.05;
-    wavelength[2] = 1824/284*0.10;
-    wavelength[3] = 1824/284*0.15;
-    wavelength[4] = 1824/284*0.20;
+    wavelength[1] = 1824/284*1/0.05/2;
+    wavelength[2] = 1824/284*1/0.10/2;
+    wavelength[3] = 1824/284*1/0.15/2;
+    wavelength[4] = 1824/284*1/0.20/2;
     
     const int position = 0;
 

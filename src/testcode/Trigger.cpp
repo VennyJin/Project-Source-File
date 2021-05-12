@@ -365,6 +365,28 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
 
         cout << "Acquisition mode set to continuous..." << endl;
 
+        // Set exposure mode to TriggerWidth 
+        CEnumerationPtr ptrExposureMode = nodeMap.GetNode("ExposureMode");
+        if (!IsAvailable(ptrExposureMode) || !IsWritable(ptrExposureMode))
+        {
+            cout << "Unable to set exposure mode to triggerwidth (node retrieval). Aborting..." << endl << endl;
+            return -1;
+        }
+
+        CEnumEntryPtr ptrExposureModeContinuous = ptrExposureMode->GetEntryByName("TriggerWidth");
+        if (!IsAvailable(ptrExposureModeContinuous) || !IsReadable(ptrExposureModeContinuous))
+        {
+            cout << "Unable to set exposure mode to triggerwidth (entry 'continuous' retrieval). Aborting..." << endl
+                 << endl;
+            return -1;
+        }
+
+        int64_t exposureModeContinuous = ptrExposureModeContinuous->GetValue();
+
+        ptrExposureMode->SetIntValue(exposureModeContinuous);
+
+        cout << "Exposure mode set to TriggerWidth..." << endl;
+
         // Begin acquiring images
         pCam->BeginAcquisition();
 
