@@ -128,7 +128,7 @@ void SettingupTrigger(aj::Project project)
 aj::Project CreateProject(unsigned short sequenceID=1, unsigned int sequenceRepeatCount=0, float frameTime_ms=-1, std::vector<aj::Component> components = std::vector<aj::Component>()) {
 
     const char* projectName = "dmd_grayscale_triggerin_example";
-    float frame_rate = 5;
+    float frame_rate = 10;
     if (frameTime_ms < 0)
     //frameTime_ms = 50;
     frameTime_ms = 1000/2/frame_rate;
