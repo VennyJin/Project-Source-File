@@ -302,20 +302,20 @@ int ConfigureCustomImageSettings(INodeMap& nodeMap)
         if (IsAvailable(ptrPixelFormat) && IsWritable(ptrPixelFormat))
         {
             // Retrieve the desired entry node from the enumeration node
-            CEnumEntryPtr ptrPixelFormatMono10 = ptrPixelFormat->GetEntryByName("Mono10p");
-            if (IsAvailable(ptrPixelFormatMono10) && IsReadable(ptrPixelFormatMono10))
+            CEnumEntryPtr ptrPixelFormatMono10p = ptrPixelFormat->GetEntryByName("Mono10p");
+            if (IsAvailable(ptrPixelFormatMono10p) && IsReadable(ptrPixelFormatMono10p))
             {
                 // Retrieve the integer value from the entry node
-                int64_t pixelFormatMono10 = ptrPixelFormatMono10->GetValue();
+                int64_t pixelFormatMono10p = ptrPixelFormatMono10p->GetValue();
 
                 // Set integer as new value for enumeration node
-                ptrPixelFormat->SetIntValue(pixelFormatMono10);
+                ptrPixelFormat->SetIntValue(pixelFormatMono10p);
 
                 cout << "Pixel format set to " << ptrPixelFormat->GetCurrentEntry()->GetSymbolic() << "..." << endl;
             }
             else
             {
-                cout << "Pixel format mono 10 not available..." << endl;
+                cout << "Pixel format mono 10p not available..." << endl;
             }
         }
         else

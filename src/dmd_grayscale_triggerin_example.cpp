@@ -46,10 +46,10 @@ std::vector<cv::Mat> GenerateSinusoidImages(int width, int height) {
                 for (int c=0; c<width; c++) 
                 {
                     if (m==0)
-                    sineValue = sin(phase * 2*M_PI);
+                    sineValue = cos(phase * 2*M_PI);
                     else {
                     // compute the 1-D sine value
-                    sineValue = sin((float)c / wavelength[m] * 2*M_PI + phase * 2*M_PI);
+                    sineValue = cos((float)c / wavelength[m] * 2*M_PI + phase * 2*M_PI);
                     }
                     // rescale it to be a 16-bit number
                     sineValue = (sineValue + 1) * 0xffff/2.0;
@@ -72,7 +72,7 @@ std::vector<cv::Mat> GenerateSinusoidImages(int width, int height) {
                 float sineValue = 0.0;
                 for (int r=0; r<height; r++) 
                 {
-                    sineValue = sin((float)r / wavelength[0] * 2*M_PI + phase * 2*M_PI);
+                    sineValue = cos((float)r / wavelength[0] * 2*M_PI + phase * 2*M_PI);
                     sineValue = (sineValue + 1) * 0xffff/2.0;
                     cv::rectangle(sineImages[i+m*numPhases], cv::Point(0,r), cv::Point(width,r), (unsigned short)sineValue, -1);            
                 }
