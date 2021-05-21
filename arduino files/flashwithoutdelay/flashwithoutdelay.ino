@@ -5,7 +5,7 @@
 int ledPin =  5;      // the number of the LED pin
 int ledState = LOW;             // ledState used to set the LED
 unsigned long previousMillis = 0;        // will store last time LED was updated
-long OnTime = 50;           // milliseconds of on-time
+long OnTime = 1;           // milliseconds of on-time
 long framerate = 10;
 long OffTime = 1000/framerate-OnTime;          // milliseconds of off-time
 

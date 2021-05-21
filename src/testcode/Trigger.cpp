@@ -195,6 +195,141 @@ int ConfigureTrigger(INodeMap& nodeMap)
     return result;
 }
 
+// This function configures a custom exposure time. Automatic exposure is turned
+// off in order to allow for the customization, and then the custom setting is
+// applied.
+int ConfigureExposure(INodeMap& nodeMap)
+{
+    int result = 0;
+
+    cout << endl << endl << "*** CONFIGURING EXPOSURE ***" << endl << endl;
+
+    try
+    {
+        //
+        // Turn off automatic exposure mode
+        //
+        // *** NOTES ***
+        // Automatic exposure prevents the manual configuration of exposure
+        // time and needs to be turned off.
+        //
+        // *** LATER ***
+        // Exposure time can be set automatically or manually as needed. This
+        // example turns automatic exposure off to set it manually and back
+        // on in order to return the camera to its default state.
+        //
+        CEnumerationPtr ptrExposureAuto = nodeMap.GetNode("ExposureAuto");
+        if (!IsAvailable(ptrExposureAuto) || !IsWritable(ptrExposureAuto))
+        {
+            cout << "Unable to disable automatic exposure (node retrieval). Aborting..." << endl << endl;
+            return -1;
+        }
+
+        CEnumEntryPtr ptrExposureAutoOff = ptrExposureAuto->GetEntryByName("Off");
+        if (!IsAvailable(ptrExposureAutoOff) || !IsReadable(ptrExposureAutoOff))
+        {
+            cout << "Unable to disable automatic exposure (enum entry retrieval). Aborting..." << endl << endl;
+            return -1;
+        }
+
+        ptrExposureAuto->SetIntValue(ptrExposureAutoOff->GetValue());
+
+        cout << "Automatic exposure disabled..." << endl;
+
+        //
+        // Set exposure time manually; exposure time recorded in microseconds
+        //
+        // *** NOTES ***
+        // The node is checked for availability and writability prior to the
+        // setting of the node. Further, it is ensured that the desired exposure
+        // time does not exceed the maximum. Exposure time is counted in
+        // microseconds. This information can be found out either by
+        // retrieving the unit with the GetUnit() method or by checking SpinView.
+        //
+        CFloatPtr ptrExposureTime = nodeMap.GetNode("ExposureTime");
+        if (!IsAvailable(ptrExposureTime) || !IsWritable(ptrExposureTime))
+        {
+            cout << "Unable to set exposure time. Aborting..." << endl << endl;
+            return -1;
+        }
+
+        // Ensure desired exposure time does not exceed the maximum
+        const double exposureTimeMax = ptrExposureTime->GetMax();
+        double exposureTimeToSet = 50000.0;
+
+        if (exposureTimeToSet > exposureTimeMax)
+        {
+            exposureTimeToSet = exposureTimeMax;
+        }
+
+        ptrExposureTime->SetValue(exposureTimeToSet);
+
+        cout << std::fixed << "Exposure time set to " << exposureTimeToSet << " us..." << endl << endl;
+    }
+    catch (Spinnaker::Exception& e)
+    {
+        cout << "Error: " << e.what() << endl;
+        result = -1;
+    }
+
+    return result;
+}
+
+int ConfigureCustomImageSettings(INodeMap& nodeMap)
+{
+    int result = 0;
+
+    cout << endl << endl << "*** CONFIGURING CUSTOM IMAGE SETTINGS ***" << endl << endl;
+
+    try
+    {
+        //
+        // Apply mono 8 pixel format
+        //
+        // *** NOTES ***
+        // Enumeration nodes are slightly more complicated to set than other
+        // nodes. This is because setting an enumeration node requires working
+        // with two nodes instead of the usual one.
+        //
+        // As such, there are a number of steps to setting an enumeration node:
+        // retrieve the enumeration node from the nodemap, retrieve the desired
+        // entry node from the enumeration node, retrieve the integer value from
+        // the entry node, and set the new value of the enumeration node with
+        // the integer value from the entry node.
+        //
+        // Retrieve the enumeration node from the nodemap
+        CEnumerationPtr ptrPixelFormat = nodeMap.GetNode("PixelFormat");
+        if (IsAvailable(ptrPixelFormat) && IsWritable(ptrPixelFormat))
+        {
+            // Retrieve the desired entry node from the enumeration node
+            CEnumEntryPtr ptrPixelFormatMono10 = ptrPixelFormat->GetEntryByName("Mono10p");
+            if (IsAvailable(ptrPixelFormatMono10) && IsReadable(ptrPixelFormatMono10))
+            {
+                // Retrieve the integer value from the entry node
+                int64_t pixelFormatMono10 = ptrPixelFormatMono10->GetValue();
+
+                // Set integer as new value for enumeration node
+                ptrPixelFormat->SetIntValue(pixelFormatMono10);
+
+                cout << "Pixel format set to " << ptrPixelFormat->GetCurrentEntry()->GetSymbolic() << "..." << endl;
+            }
+            else
+            {
+                cout << "Pixel format mono 10 not available..." << endl;
+            }
+        }
+        else
+        {
+            cout << "Pixel format not available..." << endl;
+        }
+    }
+    catch (Spinnaker::Exception& e)
+    {
+        cout << "Error: " << e.what() << endl;
+        result = -1;
+    }
+    return result;
+}
 // This function retrieves a single image using the trigger. In this example,
 // only a single image is captured and made available for acquisition - as such,
 // attempting to acquire two images for a single trigger execution would cause
@@ -282,6 +417,27 @@ int ResetTrigger(INodeMap& nodeMap)
         ptrTriggerMode->SetIntValue(ptrTriggerModeOff->GetValue());
 
         cout << "Trigger mode disabled..." << endl << endl;
+
+        // Set exposure mode to TriggerWidth 
+        CEnumerationPtr ptrExposureMode = nodeMap.GetNode("ExposureMode");
+        if (!IsAvailable(ptrExposureMode) || !IsWritable(ptrExposureMode))
+        {
+            cout << "Unable to disable exposure mode (node retrieval). Non-fatal error..."<< endl;
+            return -1;
+        }
+
+        CEnumEntryPtr ptrExposureModeContinuous = ptrExposureMode->GetEntryByName("Off");
+        if (!IsAvailable(ptrExposureModeContinuous) || !IsReadable(ptrExposureModeContinuous))
+        {
+            cout << "Unable to disable exposure mode (enum entry retrieval). Non-fatal error..."<< endl;
+            return -1;
+        }
+
+        int64_t exposureModeContinuous = ptrExposureModeContinuous->GetValue();
+
+        ptrExposureMode->SetIntValue(exposureModeContinuous);
+
+        cout << "Exposure mode disabled..." << endl;
     }
     catch (Spinnaker::Exception& e)
     {
@@ -292,6 +448,47 @@ int ResetTrigger(INodeMap& nodeMap)
     return result;
 }
 
+// This function returns the camera to its default state by re-enabling automatic
+// exposure.
+int ResetExposure(INodeMap& nodeMap)
+{
+    int result = 0;
+
+    try
+    {
+        //
+        // Turn automatic exposure back on
+        //
+        // *** NOTES ***
+        // Automatic exposure is turned on in order to return the camera to its
+        // default state.
+        //
+        CEnumerationPtr ptrExposureAuto = nodeMap.GetNode("ExposureAuto");
+        if (!IsAvailable(ptrExposureAuto) || !IsWritable(ptrExposureAuto))
+        {
+            cout << "Unable to enable automatic exposure (node retrieval). Non-fatal error..." << endl << endl;
+            return -1;
+        }
+
+        CEnumEntryPtr ptrExposureAutoContinuous = ptrExposureAuto->GetEntryByName("Continuous");
+        if (!IsAvailable(ptrExposureAutoContinuous) || !IsReadable(ptrExposureAutoContinuous))
+        {
+            cout << "Unable to enable automatic exposure (enum entry retrieval). Non-fatal error..." << endl << endl;
+            return -1;
+        }
+
+        ptrExposureAuto->SetIntValue(ptrExposureAutoContinuous->GetValue());
+
+        cout << "Automatic exposure enabled..." << endl << endl;
+    }
+    catch (Spinnaker::Exception& e)
+    {
+        cout << "Error: " << e.what() << endl;
+        result = -1;
+    }
+
+    return result;
+}
 // This function prints the device information of the camera from the transport
 // layer; please see NodeMapInfo example for more in-depth comments on printing
 // device information from the nodemap.
@@ -365,28 +562,6 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
 
         cout << "Acquisition mode set to continuous..." << endl;
 
-        // Set exposure mode to TriggerWidth 
-        CEnumerationPtr ptrExposureMode = nodeMap.GetNode("ExposureMode");
-        if (!IsAvailable(ptrExposureMode) || !IsWritable(ptrExposureMode))
-        {
-            cout << "Unable to set exposure mode to triggerwidth (node retrieval). Aborting..." << endl << endl;
-            return -1;
-        }
-
-        CEnumEntryPtr ptrExposureModeContinuous = ptrExposureMode->GetEntryByName("TriggerWidth");
-        if (!IsAvailable(ptrExposureModeContinuous) || !IsReadable(ptrExposureModeContinuous))
-        {
-            cout << "Unable to set exposure mode to triggerwidth (entry 'continuous' retrieval). Aborting..." << endl
-                 << endl;
-            return -1;
-        }
-
-        int64_t exposureModeContinuous = ptrExposureModeContinuous->GetValue();
-
-        ptrExposureMode->SetIntValue(exposureModeContinuous);
-
-        cout << "Exposure mode set to TriggerWidth..." << endl;
-
         // Begin acquiring images
         pCam->BeginAcquisition();
 
@@ -428,7 +603,7 @@ int AcquireImages(CameraPtr pCam, INodeMap& nodeMap, INodeMap& nodeMapTLDevice)
                     // Print image information
                     //cout << "Grabbed image " << imageCnt << ", width = " << pResultImage->GetWidth() << ", height = " << pResultImage->GetHeight() << endl;
                     // Convert image to mono 8
-                    ImagePtr convertedImage = pResultImage->Convert(PixelFormat_Mono8, DEFAULT);
+                    ImagePtr convertedImage = pResultImage->Convert(PixelFormat_Mono10p, DEFAULT);
 
                     // Create a unique filename
                     ostringstream filename;
@@ -498,11 +673,27 @@ int RunSingleCamera(CameraPtr pCam)
             return err;
         }
 
+        // Configure exposure
+        err = ConfigureExposure(nodeMap);
+        if (err < 0)
+        {
+            return err;
+        }
+
+        err = ConfigureCustomImageSettings(nodeMap);
+        if (err < 0)
+        {
+            return err;
+        }
+
         // Acquire images
         result = result | AcquireImages(pCam, nodeMap, nodeMapTLDevice);
 
         // Reset trigger
         result = result | ResetTrigger(nodeMap);
+
+        // Reset exposure
+        result = result | ResetExposure(nodeMap);
 
         // Deinitialize camera
         pCam->DeInit();
