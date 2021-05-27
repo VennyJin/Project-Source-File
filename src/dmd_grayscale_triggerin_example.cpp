@@ -80,6 +80,18 @@ std::vector<cv::Mat> GenerateSinusoidImages(int width, int height) {
         }
     }
 
+    // Linearity check image, (gradient planar test image set)
+    else if (position ==2)
+    {
+        float sineValue = 0.0;
+        for (int i=0; i<numPhases*numspatialfreq; i++)
+        {
+            sineValue = float((i+1)/15.0);
+            sineValue = sineValue  * 0xffff;
+            cv::rectangle(sineImages[i], cv::Point(0.1 * width, 0.1 * height), cv::Point(0.9 * width, 0.9 * height), (unsigned short)sineValue, -1);
+        }
+    }
+
     return sineImages;
 }
 

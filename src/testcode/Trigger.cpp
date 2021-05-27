@@ -255,7 +255,7 @@ int ConfigureExposure(INodeMap& nodeMap)
 
         // Ensure desired exposure time does not exceed the maximum
         const double exposureTimeMax = ptrExposureTime->GetMax();
-        double exposureTimeToSet = 50000.0;
+        double exposureTimeToSet = 60000.0;
 
         if (exposureTimeToSet > exposureTimeMax)
         {
